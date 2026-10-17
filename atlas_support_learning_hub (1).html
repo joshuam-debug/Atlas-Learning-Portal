@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas Support Learning Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Visual Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        atlas: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            500: '#1a237e',
+                            600: '#0d1b2a',
+                            700: '#080f1a',
+                            accent: '#2979ff',
+                            indigo: '#4f46e5'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 pointer-events-none">
+        <i id="toast-icon" data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
+        <span id="toast-message" class="text-sm font-medium">Action completed successfully</span>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                
+                <!-- Recreated Brand Logo -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <div class="w-10 h-10 flex items-center justify-center p-0.5 rounded-xl bg-slate-900 shadow-md">
+                        <svg class="w-full h-full" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 25,170 L 70,170 L 115,40 L 90,40 Z" fill="#1A237E" />
+                            <path d="M 175,170 L 130,170 L 115,120 L 140,50 Z" fill="#1A237E" />
+                            <path d="M 115,40 L 140,50 L 125,125 Q 100,100 80,118 Z" fill="#2979FF" />
+                            <path d="M 115,40 L 140,50 L 100,105 Z" fill="#4F46E5" opacity="0.85" />
+                            <path d="M 52,170 L 148,170 Q 100,122 52,170 Z" fill="#0D1B2A" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-black text-slate-900 text-lg tracking-tight leading-none">ATLAS</span>
+                            <span class="font-bold text-indigo-600 text-lg tracking-tight leading-none">SUPPORT</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase block mt-0.5">Learning Hub</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1 my-auto">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-indigo-600 bg-indigo-50 shadow-sm">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('waves')" id="nav-waves" class="nav-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all flex items-center gap-1.5">
+                        <i data-lucide="waves" class="w-4 h-4"></i> Waves
+                    </button>
+                    <button onclick="switchTab('plans')" id="nav-plans" class="nav-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all flex items-center gap-1.5">
+                        <i data-lucide="book-open" class="w-4 h-4"></i> Lesson Plans
+                    </button>
+                    <button onclick="switchTab('materials')" id="nav-materials" class="nav-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all flex items-center gap-1.5">
+                        <i data-lucide="presentation" class="w-4 h-4"></i> Materials & Decks
+                    </button>
+                    <button onclick="switchTab('completion')" id="nav-completion" class="nav-btn px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-600 hover:bg-slate-100">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i> Wave Completion Tracker
+                    </button>
+                </nav>
+
+                <!-- Header Actions & Access Status -->
+                <div class="flex items-center gap-2">
+                    <div id="role-badge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold bg-indigo-50 border-indigo-200 text-indigo-700">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                        <span id="role-text">Admin Access</span>
+                    </div>
+
+                    <button onclick="openModal('authModal')" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition-colors" title="Switch User Role / Login">
+                        <i data-lucide="user-cog" class="w-4 h-4"></i>
+                    </button>
+
+                    <button onclick="downloadSelfCode()" title="Download Full Page Code (.html)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm transition-all flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Download index.html</span>
+                    </button>
+
+                    <button onclick="exportData()" title="Export Data JSON" class="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">
+                        <i data-lucide="file-json" class="w-4 h-4"></i>
+                    </button>
+                    <label title="Import Data JSON" class="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Bottom Bar -->
+        <div class="md:hidden flex justify-around bg-slate-900 text-white py-2 px-1 border-t border-slate-800 text-xs">
+            <button onclick="switchTab('dashboard')" class="flex flex-col items-center gap-1 p-1">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Stats
+            </button>
+            <button onclick="switchTab('waves')" class="flex flex-col items-center gap-1 p-1">
+                <i data-lucide="waves" class="w-4 h-4"></i> Waves
+            </button>
+            <button onclick="switchTab('plans')" class="flex flex-col items-center gap-1 p-1">
+                <i data-lucide="book-open" class="w-4 h-4"></i> Plans
+            </button>
+            <button onclick="switchTab('materials')" class="flex flex-col items-center gap-1 p-1">
+                <i data-lucide="presentation" class="w-4 h-4"></i> Decks
+            </button>
+            <button onclick="switchTab('completion')" class="flex flex-col items-center gap-1 p-1">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Tracker
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ==================== TAB 1: DASHBOARD ==================== -->
+        <section id="tab-dashboard" class="tab-content space-y-6">
+            <!-- Hero Welcome Card -->
+            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-atlas-500 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 w-80 h-80 pointer-events-none">
+                    <svg viewBox="0 0 200 200" fill="white">
+                        <path d="M 25,170 L 70,170 L 115,40 L 90,40 Z" />
+                        <path d="M 175,170 L 130,170 L 115,120 L 140,50 Z" />
+                        <path d="M 115,40 L 140,50 L 125,125 Q 100,100 80,118 Z" />
+                    </svg>
+                </div>
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-blue-500/30 text-blue-200 border border-blue-400/30 text-xs font-semibold px-3 py-1 rounded-full inline-block mb-3">Atlas Operations & Learning Hub</span>
+                    <h1 class="text-2xl sm:text-4xl font-black tracking-tight">Support Training Management System</h1>
+                    <p class="mt-2 text-indigo-100 text-sm sm:text-base leading-relaxed">
+                        Manage support onboarding cohorts, present embedded Google Slides & PowerPoint decks directly, track daily topic checklists, and monitor weekly wave milestones.
+                    </p>
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <button onclick="switchTab('completion')" class="bg-white text-slate-900 hover:bg-slate-100 font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-md flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-indigo-600"></i> Open Wave Completion Tracker
+                        </button>
+                        <button onclick="openModal('materialModal')" class="admin-only bg-indigo-600/80 hover:bg-indigo-600 text-white font-medium px-4 py-2.5 rounded-xl text-sm border border-indigo-400/30 transition-all flex items-center gap-2">
+                            <i data-lucide="file-presentation" class="w-4 h-4"></i> Upload Presentation Deck
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Waves</p>
+                        <h3 id="stat-active-waves" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                        <span id="stat-total-waves" class="text-xs text-slate-500 mt-0.5 block">0 total cohorts</span>
+                    </div>
+                    <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                        <i data-lucide="waves" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Trainees Enrolled</p>
+                        <h3 id="stat-trainees" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                        <span class="text-xs text-emerald-600 font-medium mt-0.5 block flex items-center gap-1">
+                            <i data-lucide="users" class="w-3 h-3"></i> Headcount Enrolled
+                        </span>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                        <i data-lucide="user-check" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Wave Completion</p>
+                        <h3 id="stat-completion-rate" class="text-2xl font-black text-slate-900 mt-1">0%</h3>
+                        <span class="text-xs text-slate-500 mt-0.5 block">Across active cohorts</span>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                        <i data-lucide="award" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Decks & Documents</p>
+                        <h3 id="stat-materials-count" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                        <span id="stat-plans-count" class="text-xs text-slate-500 mt-0.5 block">0 lesson plans</span>
+                    </div>
+                    <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600">
+                        <i data-lucide="presentation" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Chart & Wave Status -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-5 h-5 text-indigo-600"></i> Wave Headcount & Completion Breakdown
+                        </h3>
+                        <span class="text-xs bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-full">Analytics</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="wavesChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
+                            <i data-lucide="activity" class="w-5 h-5 text-indigo-600"></i> Active Wave Status
+                        </h3>
+                        <div id="dash-wave-list" class="space-y-3 custom-scrollbar overflow-y-auto max-h-60 pr-1">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <button onclick="switchTab('completion')" class="mt-4 text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center justify-center gap-1 py-2 border border-indigo-100 rounded-xl hover:bg-indigo-50/50 transition-colors">
+                        Go to Wave Completion Tracker <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 2: WAVE COMPLETION TRACKER ==================== -->
+        <section id="tab-completion" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Wave Completion Tracker</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Track aggregate cohort progress, completion ratios, and interactive weekly onboarding milestones.</p>
+                </div>
+                <button onclick="openModal('waveModal')" class="admin-only bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add New Wave
+                </button>
+            </div>
+
+            <!-- Wave Cards Container -->
+            <div id="wave-completion-cards" class="space-y-6">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 3: LESSON PLANS ==================== -->
+        <section id="tab-plans" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Interactive Lesson Plans & Slide Presentations</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Attach Google Slides or PowerPoint presentations directly to daily lesson modules.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="setAllAccordions(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 border border-slate-200">
+                        <i data-lucide="chevrons-down" class="w-3.5 h-3.5"></i> Expand All
+                    </button>
+                    <button onclick="setAllAccordions(false)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 border border-slate-200">
+                        <i data-lucide="chevrons-up" class="w-3.5 h-3.5"></i> Collapse All
+                    </button>
+                    <button onclick="openModal('planModal')" class="admin-only bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Lesson Plan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plans Accordion Container -->
+            <div id="plans-container" class="space-y-4">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 4: WAVES MANAGEMENT ==================== -->
+        <section id="tab-waves" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Training Wave Cohorts</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Organize hiring waves, assign trainers, set target completion dates, and manage headcount.</p>
+                </div>
+                <button onclick="openModal('waveModal')" class="admin-only bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add New Wave
+                </button>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+                    <input type="text" id="wave-search" oninput="renderWaves()" placeholder="Search wave name or trainer..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <select id="wave-filter-status" onchange="renderWaves()" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="ALL">All Statuses</option>
+                    <option value="In Training">In Training</option>
+                    <option value="Nesting">Nesting</option>
+                    <option value="Graduated">Graduated</option>
+                    <option value="Upcoming">Upcoming</option>
+                </select>
+            </div>
+
+            <!-- Waves Grid -->
+            <div id="waves-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards dynamically populated -->
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 5: TRAINING MATERIALS & DECKS ==================== -->
+        <section id="tab-materials" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Training Materials & Presentation Decks</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Embed Google Slides links or drag-and-drop PowerPoint (.pptx, .ppt) and PDF files.</p>
+                </div>
+                <button onclick="openModal('materialModal')" class="admin-only bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="presentation" class="w-4 h-4"></i> Add Deck / Material
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+                    <input type="text" id="material-search" oninput="renderMaterials()" placeholder="Search materials by title, format, or tag..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <select id="material-filter-type" onchange="renderMaterials()" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="ALL">All Formats</option>
+                    <option value="Google Slides">Google Slides</option>
+                    <option value="PowerPoint">PowerPoint (.pptx)</option>
+                    <option value="SOP & Guidelines">SOP & Guidelines</option>
+                    <option value="Call Scripts">Call Scripts</option>
+                    <option value="Quizzes & Exams">Quizzes & Exams</option>
+                </select>
+            </div>
+
+            <!-- Materials Grid -->
+            <div id="materials-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-auto py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <div class="w-5 h-5 flex items-center justify-center p-0.5 rounded bg-slate-900">
+                    <svg class="w-full h-full" viewBox="0 0 200 200" fill="none">
+                        <path d="M 25,170 L 70,170 L 115,40 L 90,40 Z" fill="#1A237E" />
+                        <path d="M 175,170 L 130,170 L 115,120 L 140,50 Z" fill="#1A237E" />
+                        <path d="M 115,40 L 140,50 L 125,125 Q 100,100 80,118 Z" fill="#2979FF" />
+                    </svg>
+                </div>
+                <span class="font-bold text-slate-700">Atlas Support Learning Hub</span> &copy; 2026
+            </div>
+            <p>Empowering Customer Support Excellence.</p>
+        </div>
+    </footer>
+
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- ROLE AUTH MODAL -->
+    <div id="authModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('authModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Role & Access Control</h3>
+            <p class="text-xs text-slate-500 mb-4">Log in as Administrator to make changes or switch to View-Only Agent mode.</p>
+            
+            <form onsubmit="handleAuthLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email / Username</label>
+                    <input type="email" id="auth-email" required placeholder="joshuam@atlasfin.com" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+                    <input type="password" id="auth-pass" required placeholder="••••••••" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                
+                <div class="flex flex-col gap-2 pt-2">
+                    <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm">Log In as Admin</button>
+                    <button type="button" onclick="switchToAgentMode()" class="w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50">Switch to View-Only Agent</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- PRESENTATION EMBED VIEWER MODAL -->
+    <div id="slideViewerModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-6">
+        <div class="bg-slate-900 text-white rounded-2xl max-w-5xl w-full h-[85vh] flex flex-col shadow-2xl relative border border-slate-800 overflow-hidden">
+            <div class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <span id="slide-type-badge" class="px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">Google Slides</span>
+                    <h3 id="slide-modal-title" class="text-sm sm:text-base font-bold truncate text-slate-100">Presentation Deck Title</h3>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a id="slide-external-link" href="#" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-300 transition-colors">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open External
+                    </a>
+                    <button onclick="closeModal('slideViewerModal')" class="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-grow bg-black relative flex items-center justify-center overflow-hidden" id="slide-modal-content">
+                <!-- iFrame or File Viewer dynamically rendered here -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- WAVE EDIT MODAL -->
+    <div id="waveModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('waveModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 id="waveModalTitle" class="text-lg font-bold text-slate-900 mb-4">Add / Edit Wave Cohort</h3>
+            <form id="waveForm" onsubmit="saveWave(event)" class="space-y-4">
+                <input type="hidden" id="wave-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Wave Name</label>
+                    <input type="text" id="wave-name" required placeholder="e.g. Wave 22 - Escalations & Billing" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Lead Trainer</label>
+                    <input type="text" id="wave-trainer" required placeholder="Marcus Vance" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Start Date</label>
+                        <input type="date" id="wave-start" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Completion</label>
+                        <input type="date" id="wave-end" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status</label>
+                        <select id="wave-status" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="In Training">In Training</option>
+                            <option value="Nesting">Nesting</option>
+                            <option value="Graduated">Graduated</option>
+                            <option value="Upcoming">Upcoming</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Total Enrolled</label>
+                        <input type="number" id="wave-count" min="1" value="12" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pass Rate %</label>
+                        <input type="number" id="wave-passrate" min="0" max="100" value="92" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="pt-3 flex gap-3">
+                    <button type="button" onclick="closeModal('waveModal')" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm">Save Wave</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- EDIT MILESTONES MODAL -->
+    <div id="milestonesModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('milestonesModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Edit Key Wave Milestones</h3>
+            <p class="text-xs text-slate-500 mb-4">Rename, add, or delete weekly onboarding milestones for this wave.</p>
+            
+            <input type="hidden" id="edit-milestones-wave-id">
+            
+            <div id="milestones-editor-list" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1 mb-4">
+                <!-- Dynamically populated list of milestone inputs -->
+            </div>
+
+            <button onclick="addMilestoneRow()" class="w-full py-2 border-2 border-dashed border-indigo-200 hover:border-indigo-400 text-indigo-600 font-bold text-xs rounded-xl transition-colors mb-4 flex items-center justify-center gap-1">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Weekly Milestone
+            </button>
+
+            <div class="flex gap-3">
+                <button type="button" onclick="closeModal('milestonesModal')" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+                <button type="button" onclick="saveMilestonesFromModal()" class="w-1/2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm">Save Milestones</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MATERIAL / GOOGLE SLIDES / PPT MODAL WITH DRAG & DROP -->
+    <div id="materialModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('materialModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 id="materialModalTitle" class="text-lg font-bold text-slate-900 mb-4">Add Training Material / Slide Deck</h3>
+            
+            <form id="materialForm" onsubmit="saveMaterial(event)" class="space-y-4">
+                <input type="hidden" id="material-id">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Format Type</label>
+                    <select id="mat-format" onchange="toggleMaterialFormatFields()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="Google Slides">Google Slides (Share / Embed Link)</option>
+                        <option value="PowerPoint">PowerPoint Upload (.pptx, .ppt, .pdf)</option>
+                        <option value="SOP & Guidelines">SOP & Guidelines Link</option>
+                        <option value="Call Scripts">Call Scripts Link</option>
+                        <option value="Quizzes & Exams">Quizzes & Exams Link</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Title</label>
+                    <input type="text" id="mat-title" required placeholder="e.g. Wave 22 Customer Service De-escalation Deck" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <!-- Google Slides Link Input -->
+                <div id="field-google-slides">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Google Slides Share / Embed Link</label>
+                    <input type="url" id="mat-url" placeholder="https://docs.google.com/presentation/d/..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <p class="text-[11px] text-slate-400 mt-1">Paste any standard Google Slides URL or embed link.</p>
+                </div>
+
+                <!-- Drag & Drop PowerPoint Upload Area -->
+                <div id="field-ppt-upload" class="hidden">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Upload PowerPoint File (.pptx, .ppt, .pdf)</label>
+                    <div id="drop-zone" onclick="document.getElementById('file-input-ppt').click()" class="border-2 border-dashed border-indigo-200 hover:border-indigo-500 bg-indigo-50/40 rounded-2xl p-6 text-center cursor-pointer transition-colors">
+                        <i data-lucide="upload-cloud" class="w-8 h-8 text-indigo-600 mx-auto mb-2"></i>
+                        <span id="upload-label" class="text-xs font-bold text-indigo-900 block">Click or Drag & Drop PowerPoint Deck Here</span>
+                        <span class="text-[10px] text-slate-400 block mt-0.5">Supports PPTX, PPT, PDF files</span>
+                        <input type="file" id="file-input-ppt" accept=".pptx,.ppt,.pdf" class="hidden" onchange="handleFileSelect(event)">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tags (comma separated)</label>
+                    <input type="text" id="mat-tags" placeholder="Onboarding, Presentation, De-escalation" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div class="pt-3 flex gap-3">
+                    <button type="button" onclick="closeModal('materialModal')" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm">Save Material</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- LESSON PLAN MODAL -->
+    <div id="planModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('planModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 id="planModalTitle" class="text-lg font-bold text-slate-900 mb-4">Create Lesson Plan</h3>
+            <form id="planForm" onsubmit="savePlan(event)" class="space-y-4">
+                <input type="hidden" id="plan-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Lesson Day / Title</label>
+                    <input type="text" id="plan-title" required placeholder="Day 1: Platform Overview & Navigation" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Duration</label>
+                        <input type="text" id="plan-duration" required placeholder="6 Hours" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Delivery Mode</label>
+                        <select id="plan-mode" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Instructor-Led">Instructor-Led</option>
+                            <option value="Self-Paced">Self-Paced</option>
+                            <option value="Workshop & Roleplay">Workshop & Roleplay</option>
+                            <option value="Assessment & Quiz">Assessment & Quiz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Attached Deck Dropdown -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Attach Presentation Deck (Google Slides / PPT)</label>
+                    <select id="plan-attached-material" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="">-- No Attached Presentation Deck --</option>
+                        <!-- Populated dynamically from state.materials -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Learning Objectives</label>
+                    <textarea id="plan-objectives" rows="2" required placeholder="High-level learning goals..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Sub-topics / Checklist Items (One per line)</label>
+                    <textarea id="plan-topics" rows="4" required placeholder="Atlas Account Setup&#10;Portal Navigation Walkthrough&#10;Security Compliance Verification" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+                <div class="pt-3 flex gap-3">
+                    <button type="button" onclick="closeModal('planModal')" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm">Save Plan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        // Default Initial Data
+        const INITIAL_DATA = {
+            role: 'admin', // 'admin' or 'agent'
+            waves: [
+                { 
+                    id: 'w1', 
+                    name: 'Wave 21 - Tier 1 Support', 
+                    trainer: 'Sarah Jenkins', 
+                    start: '2026-09-01', 
+                    end: '2026-09-30', 
+                    status: 'Graduated', 
+                    count: 14, 
+                    completedCount: 14, 
+                    passRate: 98,
+                    milestonesList: [
+                        { id: 'm1_1', name: '1. Week 1 - Onboarding', completed: true },
+                        { id: 'm1_2', name: '2. Week 2 - Core Training', completed: true },
+                        { id: 'm1_3', name: '3. Week 3 - System Simulation', completed: true },
+                        { id: 'm1_4', name: '4. Week 4 - Exam & Nesting', completed: true },
+                        { id: 'm1_5', name: '5. Week 5 - Shadowing', completed: true },
+                        { id: 'm1_6', name: '6. Week 6 - Graduation', completed: true }
+                    ]
+                },
+                { 
+                    id: 'w2', 
+                    name: 'Wave 22 - Escalations & Billing', 
+                    trainer: 'Marcus Vance', 
+                    start: '2026-10-01', 
+                    end: '2026-10-28', 
+                    status: 'In Training', 
+                    count: 12, 
+                    completedCount: 8, 
+                    passRate: 91,
+                    milestonesList: [
+                        { id: 'm2_1', name: '1. Onboarding', completed: true },
+                        { id: 'm2_2', name: '2. Week 1 Exam', completed: true },
+                        { id: 'm2_3', name: '3. Nesting Phase', completed: true },
+                        { id: 'm2_4', name: '4. Graduation', completed: true }
+                    ]
+                }
+            ],
+            materials: [
+                { 
+                    id: 'm1', 
+                    title: 'Atlas Platform Architecture & Onboarding Google Deck', 
+                    category: 'Google Slides', 
+                    url: 'https://docs.google.com/presentation/d/e/2PACX-1vR11yqY1Hq6H2lU2y/embed?start=false&loop=false&delayms=3000', 
+                    tags: ['Google Slides', 'Onboarding', 'Deck'],
+                    fileName: ''
+                },
+                { 
+                    id: 'm2', 
+                    title: 'De-escalation & Soft Skills Presentation', 
+                    category: 'PowerPoint', 
+                    url: 'https://example.com/deescalation-slides.pptx', 
+                    tags: ['PowerPoint', 'Soft Skills'],
+                    fileName: 'De-escalation_Framework_2026.pptx'
+                },
+                { 
+                    id: 'm3', 
+                    title: 'Standard Zendesk Macro & Tagging SOP', 
+                    category: 'SOP & Guidelines', 
+                    url: 'https://example.com/sop-zendesk', 
+                    tags: ['Zendesk', 'Macro', 'SOP'],
+                    fileName: ''
+                }
+            ],
+            plans: [
+                { 
+                    id: 'p1', 
+                    title: 'Day 1: Platform Overview & Navigation', 
+                    duration: '6 Hours', 
+                    mode: 'Instructor-Led', 
+                    attachedMaterialId: 'm1',
+                    objectives: 'Understand Atlas internal ecosystem, set up tool credentials, navigate workspace, and verify security protocols.',
+                    topics: [
+                        { id: 't1_1', title: 'Atlas Enterprise Overview & Value Proposition', completed: true },
+                        { id: 't1_2', title: 'OKTA Single Sign-On & Tool Suite Authentication', completed: true },
+                        { id: 't1_3', title: 'Zendesk & Internal CRM Workspace Setup', completed: false },
+                        { id: 't1_4', title: 'Security Compliance & Data Privacy Guidelines', completed: false }
+                    ]
+                },
+                { 
+                    id: 'p2', 
+                    title: 'Day 2: Advanced Escalations & Ticketing', 
+                    duration: '5 Hours', 
+                    mode: 'Workshop & Roleplay', 
+                    attachedMaterialId: 'm2',
+                    objectives: 'Master ticket status transitions, queue assignments, mandatory tag compliance, and SLA response times.',
+                    topics: [
+                        { id: 't2_1', title: 'Ticket Life Cycle: Open to Solved States', completed: false },
+                        { id: 't2_2', title: 'Priority Levels & SLA Countdown Timers', completed: false },
+                        { id: 't2_3', title: 'Categorization & Macro Utilization Workshop', completed: false }
+                    ]
+                }
+            ]
+        };
+
+        // Application State
+        let state = { role: 'admin', waves: [], materials: [], plans: [] };
+        let chartInstance = null;
+        let selectedUploadedFile = null;
+        const expandedPlans = new Set(['p1']);
+
+        // --- Lifecycle ---
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            lucide.createIcons();
+            renderAll();
+            setupDragAndDrop();
+        });
+
+        function loadState() {
+            const saved = localStorage.getItem('atlas_learning_hub_v5');
+            if (saved) {
+                try { state = JSON.parse(saved); } 
+                catch (e) { state = JSON.parse(JSON.stringify(INITIAL_DATA)); }
+            } else {
+                state = JSON.parse(JSON.stringify(INITIAL_DATA));
+                saveState();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('atlas_learning_hub_v5', JSON.stringify(state));
+        }
+
+        function handleAuthLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-pass').value.trim();
+
+            if (email.toLowerCase() === 'joshuam@atlasfin.com' && pass === 'Atlas2024!') {
+                state.role = 'admin';
+                saveState();
+                renderAll();
+                closeModal('authModal');
+                showToast("Logged in as Admin");
+            } else {
+                showToast("Invalid credentials. Please try again.", true);
+            }
+        }
+
+        function switchToAgentMode() {
+            state.role = 'agent';
+            saveState();
+            renderAll();
+            closeModal('authModal');
+            showToast("Switched to View-Only Agent mode");
+        }
+
+        function updateRoleUI() {
+            const roleText = document.getElementById('role-text');
+            const roleBadge = document.getElementById('role-badge');
+            const adminOnlyElements = document.querySelectorAll('.admin-only');
+
+            if (state.role === 'admin') {
+                roleText.textContent = 'Admin Access';
+                roleBadge.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold bg-indigo-50 border-indigo-200 text-indigo-700';
+                adminOnlyElements.forEach(el => el.classList.remove('hidden'));
+            } else {
+                roleText.textContent = 'Agent View-Only';
+                roleBadge.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold bg-slate-100 border-slate-300 text-slate-600';
+                adminOnlyElements.forEach(el => el.classList.add('hidden'));
+            }
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            const message = document.getElementById('toast-message');
+            const icon = document.getElementById('toast-icon');
+
+            message.textContent = msg;
+            if (isError) {
+                icon.setAttribute('data-lucide', 'alert-circle');
+                icon.className = "w-5 h-5 text-rose-400";
+            } else {
+                icon.setAttribute('data-lucide', 'check-circle');
+                icon.className = "w-5 h-5 text-emerald-400";
+            }
+            lucide.createIcons();
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
+        }
+
+        function downloadSelfCode() {
+            const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Downloaded index.html file");
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-indigo-600', 'bg-indigo-50', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add('text-indigo-600', 'bg-indigo-50', 'shadow-sm');
+                activeNav.classList.remove('text-slate-600');
+            }
+
+            if (tabId === 'dashboard') renderDashboardChart();
+        }
+
+        function renderAll() {
+            updateRoleUI();
+            renderDashboardStats();
+            renderDashboardChart();
+            renderWaveCompletionTracker();
+            renderPlans();
+            renderWaves();
+            renderMaterials();
+            populateAttachedMaterialDropdown();
+        }
+
+        // --- Slide Viewer Modal ---
+        function openSlideViewer(materialId) {
+            const mat = state.materials.find(m => m.id === materialId);
+            if (!mat) {
+                showToast("Material or deck not found", true);
+                return;
+            }
+
+            document.getElementById('slide-modal-title').textContent = mat.title;
+            const badge = document.getElementById('slide-type-badge');
+            const content = document.getElementById('slide-modal-content');
+            const extLink = document.getElementById('slide-external-link');
+
+            badge.textContent = mat.category;
+            extLink.href = mat.url || '#';
+
+            if (mat.category === 'Google Slides') {
+                badge.className = "px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30";
+                
+                let embedUrl = mat.url;
+                if (embedUrl.includes('docs.google.com/presentation/d/')) {
+                    if (!embedUrl.includes('/embed')) {
+                        embedUrl = embedUrl.replace(/\/edit.*$/, '/embed?start=false&loop=false&delayms=3000');
+                        if (!embedUrl.includes('/embed')) embedUrl += '/embed';
+                    }
+                }
+
+                content.innerHTML = `
+                    <iframe src="${embedUrl}" frameborder="0" class="w-full h-full" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+                `;
+            } else if (mat.category === 'PowerPoint') {
+                badge.className = "px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-orange-500/20 text-orange-300 border border-orange-500/30";
+                content.innerHTML = `
+                    <div class="text-center p-8 max-w-md">
+                        <div class="w-16 h-16 bg-orange-500/20 text-orange-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-orange-500/30">
+                            <i data-lucide="file-presentation" class="w-8 h-8"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-white mb-2">${escapeHtml(mat.title)}</h4>
+                        <p class="text-xs text-slate-400 mb-6">PowerPoint file (${escapeHtml(mat.fileName || 'Presentation.pptx')}) ready for presentation.</p>
+                        <a href="${mat.url}" target="_blank" download="${mat.fileName || 'presentation.pptx'}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all inline-flex items-center gap-2 shadow-lg">
+                            <i data-lucide="download" class="w-4 h-4"></i> Download / Launch PowerPoint
+                        </a>
+                    </div>
+                `;
+            } else {
+                badge.className = "px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30";
+                content.innerHTML = `
+                    <iframe src="${mat.url}" frameborder="0" class="w-full h-full"></iframe>
+                `;
+            }
+
+            lucide.createIcons();
+            openModal('slideViewerModal');
+        }
+
+        // --- Drag and Drop File Handlers ---
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            if (!dropZone) return;
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.add('border-indigo-500', 'bg-indigo-100/50'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-indigo-500', 'bg-indigo-100/50'), false);
+            });
+
+            dropZone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) processFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) processFile(files[0]);
+        }
+
+        function processFile(file) {
+            selectedUploadedFile = file;
+            document.getElementById('upload-label').textContent = `File Selected: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+            if (!document.getElementById('mat-title').value) {
+                document.getElementById('mat-title').value = file.name.replace(/\.[^/.]+$/, "");
+            }
+        }
+
+        function toggleMaterialFormatFields() {
+            const fmt = document.getElementById('mat-format').value;
+            const slidesDiv = document.getElementById('field-google-slides');
+            const pptDiv = document.getElementById('field-ppt-upload');
+
+            if (fmt === 'PowerPoint') {
+                slidesDiv.classList.add('hidden');
+                pptDiv.classList.remove('hidden');
+            } else {
+                slidesDiv.classList.remove('hidden');
+                pptDiv.classList.add('hidden');
+            }
+        }
+
+        // --- Dashboard Analytics ---
+        function renderDashboardStats() {
+            const activeWaves = state.waves.filter(w => w.status === 'In Training' || w.status === 'Nesting');
+            const totalEnrolled = state.waves.reduce((acc, curr) => acc + Number(curr.count || 0), 0);
+            
+            let totalCompPct = 0;
+            if (state.waves.length > 0) {
+                const sum = state.waves.reduce((acc, w) => {
+                    const milestones = w.milestonesList || [];
+                    const done = milestones.filter(m => m.completed).length;
+                    return acc + (milestones.length > 0 ? (done / milestones.length) * 100 : 0);
+                }, 0);
+                totalCompPct = Math.round(sum / state.waves.length);
+            }
+
+            document.getElementById('stat-active-waves').textContent = activeWaves.length;
+            document.getElementById('stat-total-waves').textContent = `${state.waves.length} total cohorts recorded`;
+            document.getElementById('stat-trainees').textContent = totalEnrolled;
+            document.getElementById('stat-completion-rate').textContent = `${totalCompPct}%`;
+            document.getElementById('stat-materials-count').textContent = state.materials.length;
+            document.getElementById('stat-plans-count').textContent = `${state.plans.length} interactive modules`;
+
+            const listEl = document.getElementById('dash-wave-list');
+            if (activeWaves.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 italic py-4 text-center">No active waves in training.</p>`;
+            } else {
+                listEl.innerHTML = activeWaves.map(w => {
+                    const milestones = w.milestonesList || [];
+                    const done = milestones.filter(m => m.completed).length;
+                    const pct = milestones.length > 0 ? Math.round((done / milestones.length) * 100) : 0;
+                    return `
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-800 text-xs">${escapeHtml(w.name)}</h4>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${w.status === 'In Training' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}">
+                                ${w.status}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Milestones: ${done}/${milestones.length}</span>
+                            <span class="font-bold text-indigo-600">${pct}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderDashboardChart() {
+            const ctx = document.getElementById('wavesChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            const waveNames = state.waves.map(w => w.name.length > 18 ? w.name.substring(0, 18) + '...' : w.name);
+            const totalTrainees = state.waves.map(w => w.count);
+            const completedTrainees = state.waves.map(w => w.completedCount);
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: waveNames,
+                    datasets: [
+                        { label: 'Total Enrolled', data: totalTrainees, backgroundColor: '#c7d2fe', borderRadius: 6 },
+                        { label: 'Graduated / Completed', data: completedTrainees, backgroundColor: '#4f46e5', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Inter', size: 11 } } } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
+                }
+            });
+        }
+
+        // --- Wave Completion Tracker ---
+        function renderWaveCompletionTracker() {
+            const container = document.getElementById('wave-completion-cards');
+            if (state.waves.length === 0) {
+                container.innerHTML = `<div class="py-12 text-center text-slate-400">No waves found. Click "Add New Wave" to begin.</div>`;
+                return;
+            }
+
+            container.innerHTML = state.waves.map(w => {
+                const milestones = w.milestonesList || [];
+                const completedMilestonesCount = milestones.filter(m => m.completed).length;
+                const milestonePct = milestones.length > 0 ? Math.round((completedMilestonesCount / milestones.length) * 100) : 0;
+
+                const statusBadges = {
+                    'Graduated': 'bg-emerald-100 text-emerald-800',
+                    'In Training': 'bg-indigo-100 text-indigo-800',
+                    'Nesting': 'bg-amber-100 text-amber-800',
+                    'Upcoming': 'bg-slate-100 text-slate-800'
+                };
+
+                return `
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-lg font-bold text-slate-900">${escapeHtml(w.name)}</h3>
+                                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${statusBadges[w.status] || 'bg-slate-100'}">
+                                    ${w.status}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500">
+                                Lead Trainer: <strong class="text-slate-700">${escapeHtml(w.trainer)}</strong> &bull; Start: ${w.start} &bull; Target Completion: ${w.end}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="text-right">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Completed Trainees</span>
+                                <span class="text-lg font-extrabold text-indigo-600">${w.completedCount} / ${w.count}</span>
+                            </div>
+                            <div class="admin-only flex items-center gap-1">
+                                <button onclick="adjustWaveCompleted('${w.id}', -1)" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold flex items-center justify-center shadow-2xs">-</button>
+                                <button onclick="adjustWaveCompleted('${w.id}', 1)" class="w-8 h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold flex items-center justify-center shadow-2xs">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+                        <div class="md:col-span-2 space-y-1">
+                            <div class="flex justify-between text-xs font-bold text-slate-700">
+                                <span>Overall Wave Progression Rate</span>
+                                <span class="text-indigo-600">${milestonePct}%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                                <div class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: ${milestonePct}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-left md:text-right">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block tracking-wider">Assessment Pass Rate</span>
+                            <span class="text-base font-black text-emerald-600">${w.passRate || 0}% Pass Rate</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Key Wave Onboarding Milestones</h4>
+                            <button onclick="openMilestonesModal('${w.id}')" class="admin-only text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 hover:underline">
+                                <i data-lucide="edit-3" class="w-3 h-3"></i> Edit Milestones
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            ${milestones.map(m => `
+                                <div onclick="toggleMilestonePill('${w.id}', '${m.id}')" class="flex items-center gap-2.5 p-3 rounded-2xl border ${m.completed ? 'border-indigo-200 bg-indigo-50/40' : 'border-slate-200 bg-white'} hover:border-indigo-400 cursor-pointer transition-all shadow-2xs group">
+                                    <input type="checkbox" ${m.completed ? 'checked' : ''} onclick="event.stopPropagation(); toggleMilestonePill('${w.id}', '${m.id}')" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                                    <span class="text-xs font-bold ${m.completed ? 'text-indigo-900' : 'text-slate-700'} group-hover:text-indigo-600 transition-colors truncate">
+                                        ${escapeHtml(m.name)}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+            updateRoleUI();
+        }
+
+        function toggleMilestonePill(waveId, milestoneId) {
+            const wave = state.waves.find(w => w.id === waveId);
+            if (!wave || !wave.milestonesList) return;
+            const milestone = wave.milestonesList.find(m => m.id === milestoneId);
+            if (milestone) {
+                milestone.completed = !milestone.completed;
+                saveState();
+                renderWaveCompletionTracker();
+                renderDashboardStats();
+            }
+        }
+
+        function adjustWaveCompleted(waveId, delta) {
+            if (state.role !== 'admin') return;
+            const wave = state.waves.find(w => w.id === waveId);
+            if (!wave) return;
+            const newCount = (wave.completedCount || 0) + delta;
+            if (newCount >= 0 && newCount <= wave.count) {
+                wave.completedCount = newCount;
+                if (wave.completedCount === wave.count && wave.count > 0) wave.status = 'Graduated';
+                saveState();
+                renderWaveCompletionTracker();
+                renderDashboardStats();
+                renderDashboardChart();
+            }
+        }
+
+        // --- Milestone Editor Modal ---
+        let currentEditingMilestones = [];
+
+        function openMilestonesModal(waveId) {
+            if (state.role !== 'admin') return;
+            const wave = state.waves.find(w => w.id === waveId);
+            if (!wave) return;
+            document.getElementById('edit-milestones-wave-id').value = waveId;
+            currentEditingMilestones = JSON.parse(JSON.stringify(wave.milestonesList || []));
+            renderMilestoneRows();
+            openModal('milestonesModal');
+        }
+
+        function renderMilestoneRows() {
+            const container = document.getElementById('milestones-editor-list');
+            if (currentEditingMilestones.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic py-2 text-center">No milestones. Click below to add one.</p>`;
+                return;
+            }
+            container.innerHTML = currentEditingMilestones.map((m, index) => `
+                <div class="flex items-center gap-2">
+                    <input type="text" value="${escapeHtml(m.name)}" oninput="currentEditingMilestones[${index}].name = this.value" placeholder="e.g. Week ${index + 1} - Milestone Name" class="flex-grow px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <button type="button" onclick="removeMilestoneRow(${index})" class="p-1.5 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function addMilestoneRow() {
+            const nextNum = currentEditingMilestones.length + 1;
+            currentEditingMilestones.push({
+                id: 'm_custom_' + Date.now() + '_' + nextNum,
+                name: `${nextNum}. Week ${nextNum} - Milestone`,
+                completed: false
+            });
+            renderMilestoneRows();
+        }
+
+        function removeMilestoneRow(index) {
+            currentEditingMilestones.splice(index, 1);
+            renderMilestoneRows();
+        }
+
+        function saveMilestonesFromModal() {
+            const waveId = document.getElementById('edit-milestones-wave-id').value;
+            const wave = state.waves.find(w => w.id === waveId);
+            if (wave) {
+                wave.milestonesList = currentEditingMilestones;
+                saveState();
+                renderWaveCompletionTracker();
+                renderDashboardStats();
+                closeModal('milestonesModal');
+                showToast("Milestones updated successfully!");
+            }
+        }
+
+        // --- Lesson Plans Section ---
+        function renderPlans() {
+            const container = document.getElementById('plans-container');
+            if (state.plans.length === 0) {
+                container.innerHTML = `<div class="py-12 text-center text-slate-400">No lesson plans created yet. Click "Add Lesson Plan" above.</div>`;
+                return;
+            }
+
+            container.innerHTML = state.plans.map(p => {
+                const totalTopics = p.topics ? p.topics.length : 0;
+                const completedTopics = p.topics ? p.topics.filter(t => t.completed).length : 0;
+                const pct = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+                const isExpanded = expandedPlans.has(p.id);
+                const attachedMat = p.attachedMaterialId ? state.materials.find(m => m.id === p.attachedMaterialId) : null;
+
+                return `
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden transition-all" id="plan-card-${p.id}">
+                    <div class="p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100">
+                        <div class="space-y-1.5 max-w-2xl">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-md">${p.mode}</span>
+                                <span class="text-xs text-slate-400 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${p.duration}</span>
+                                ${attachedMat ? `
+                                    <button onclick="openSlideViewer('${attachedMat.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 text-[10px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1 transition-colors">
+                                        <i data-lucide="presentation" class="w-3 h-3 text-amber-600"></i> ${escapeHtml(attachedMat.title)}
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <h3 class="text-base font-bold text-slate-900">${escapeHtml(p.title)}</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(p.objectives)}</p>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-between md:justify-end shrink-0">
+                            ${attachedMat ? `
+                                <button onclick="openSlideViewer('${attachedMat.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5">
+                                    <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Launch Presentation
+                                </button>
+                            ` : ''}
+
+                            <div class="text-right">
+                                <span id="progress-text-${p.id}" class="text-xs font-bold text-slate-800">${completedTopics} of ${totalTopics} Topics (${pct}%)</span>
+                                <div class="w-32 bg-slate-100 rounded-full h-2 overflow-hidden mt-1">
+                                    <div id="progress-bar-${p.id}" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="togglePlanAccordion('${p.id}')" id="btn-toggle-${p.id}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 border border-slate-200">
+                                <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" id="arrow-${p.id}" class="w-4 h-4"></i>
+                                <span id="btn-text-${p.id}">${isExpanded ? 'Collapse Details' : 'Expand Details'}</span>
+                            </button>
+
+                            <div class="admin-only flex items-center gap-1 border-l border-slate-200 pl-2">
+                                <button onclick="editPlan('${p.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="deletePlan('${p.id}')" class="p-1.5 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="topics-body-${p.id}" class="${isExpanded ? '' : 'hidden'} bg-slate-50/70 p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                <i data-lucide="list-checks" class="w-4 h-4 text-indigo-600"></i> Detailed Topic Checklist
+                            </h4>
+                            <div class="flex items-center gap-2">
+                                <button onclick="markAllTopics('${p.id}', true)" class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/60 px-2.5 py-1 rounded-lg transition-colors">Mark All Complete</button>
+                                <button onclick="markAllTopics('${p.id}', false)" class="text-[11px] font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 px-2.5 py-1 rounded-lg transition-colors">Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            ${p.topics && p.topics.length > 0 ? p.topics.map(t => `
+                                <label class="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/80 hover:border-indigo-200 cursor-pointer transition-colors shadow-2xs">
+                                    <input type="checkbox" id="chk-${p.id}-${t.id}" ${t.completed ? 'checked' : ''} onchange="toggleTopicCheckDirect('${p.id}', '${t.id}')" class="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                                    <span id="label-${p.id}-${t.id}" class="text-xs font-medium ${t.completed ? 'line-through text-slate-400' : 'text-slate-800'}">${escapeHtml(t.title)}</span>
+                                </label>
+                            `).join('') : '<p class="text-xs text-slate-400 italic">No sub-topics added.</p>'}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+            updateRoleUI();
+        }
+
+        function togglePlanAccordion(planId) {
+            const body = document.getElementById(`topics-body-${planId}`);
+            const btnText = document.getElementById(`btn-text-${planId}`);
+            const arrow = document.getElementById(`arrow-${planId}`);
+
+            if (expandedPlans.has(planId)) {
+                expandedPlans.delete(planId);
+                body.classList.add('hidden');
+                if (btnText) btnText.textContent = 'Expand Details';
+                if (arrow) arrow.setAttribute('data-lucide', 'chevron-down');
+            } else {
+                expandedPlans.add(planId);
+                body.classList.remove('hidden');
+                if (btnText) btnText.textContent = 'Collapse Details';
+                if (arrow) arrow.setAttribute('data-lucide', 'chevron-up');
+            }
+            lucide.createIcons();
+        }
+
+        function setAllAccordions(expand) {
+            state.plans.forEach(p => {
+                if (expand) expandedPlans.add(p.id);
+                else expandedPlans.clear();
+            });
+            renderPlans();
+        }
+
+        function toggleTopicCheckDirect(planId, topicId) {
+            const plan = state.plans.find(p => p.id === planId);
+            if (!plan) return;
+            const topic = plan.topics.find(t => t.id === topicId);
+            if (!topic) return;
+
+            const chk = document.getElementById(`chk-${planId}-${topicId}`);
+            const label = document.getElementById(`label-${planId}-${topicId}`);
+
+            topic.completed = chk.checked;
+            
+            if (topic.completed) {
+                label.classList.add('line-through', 'text-slate-400');
+                label.classList.remove('text-slate-800');
+            } else {
+                label.classList.remove('line-through', 'text-slate-400');
+                label.classList.add('text-slate-800');
+            }
+
+            const totalTopics = plan.topics.length;
+            const completedTopics = plan.topics.filter(t => t.completed).length;
+            const pct = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+
+            const progressText = document.getElementById(`progress-text-${planId}`);
+            const progressBar = document.getElementById(`progress-bar-${planId}`);
+
+            if (progressText) progressText.textContent = `${completedTopics} of ${totalTopics} Topics (${pct}%)`;
+            if (progressBar) progressBar.style.width = `${pct}%`;
+
+            saveState();
+            renderDashboardStats();
+        }
+
+        function markAllTopics(planId, status) {
+            const plan = state.plans.find(p => p.id === planId);
+            if (!plan || !plan.topics) return;
+            plan.topics.forEach(t => t.completed = status);
+            saveState();
+            renderPlans();
+            renderDashboardStats();
+            showToast(status ? "All topics marked complete!" : "Checklist reset");
+        }
+
+        function populateAttachedMaterialDropdown() {
+            const select = document.getElementById('plan-attached-material');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- No Attached Presentation Deck --</option>' + 
+                state.materials.map(m => `<option value="${m.id}">${escapeHtml(m.title)} (${m.category})</option>`).join('');
+        }
+
+
+        // --- Waves Section ---
+        function renderWaves() {
+            const grid = document.getElementById('waves-grid');
+            const search = document.getElementById('wave-search').value.toLowerCase();
+            const filter = document.getElementById('wave-filter-status').value;
+
+            const filtered = state.waves.filter(w => {
+                const matchesSearch = w.name.toLowerCase().includes(search) || w.trainer.toLowerCase().includes(search);
+                const matchesFilter = filter === 'ALL' || w.status === filter;
+                return matchesSearch && matchesFilter;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No waves found matching search.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(w => {
+                const statusColors = {
+                    'In Training': 'bg-indigo-50 border-indigo-200 text-indigo-700',
+                    'Nesting': 'bg-amber-50 border-amber-200 text-amber-700',
+                    'Graduated': 'bg-emerald-50 border-emerald-200 text-emerald-700',
+                    'Upcoming': 'bg-slate-100 border-slate-200 text-slate-700'
+                };
+                const pct = Math.round((w.completedCount / w.count) * 100) || 0;
+
+                return `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full border ${statusColors[w.status] || 'bg-slate-100'}">
+                                ${w.status}
+                            </span>
+                            <div class="admin-only flex items-center gap-1">
+                                <button onclick="editWave('${w.id}')" class="p-1 text-slate-400 hover:text-indigo-600"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="deleteWave('${w.id}')" class="p-1 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base mb-1">${escapeHtml(w.name)}</h3>
+                        <p class="text-xs text-slate-500 mb-4 flex items-center gap-1">
+                            <i data-lucide="user-check" class="w-3.5 h-3.5 text-slate-400"></i> Lead Trainer: <strong class="text-slate-700">${escapeHtml(w.trainer)}</strong>
+                        </p>
+
+                        <div class="space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Duration:</span>
+                                <span class="font-medium">${w.start} &rarr; ${w.end}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Completed Trainees:</span>
+                                <span class="font-bold text-slate-800">${w.completedCount} / ${w.count} (${pct}%)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-3 border-t border-slate-100 flex gap-2">
+                        <button onclick="switchTab('completion')" class="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1">
+                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Track Completion Status
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+            updateRoleUI();
+        }
+
+        // --- Materials & Presentation Decks Section ---
+        function renderMaterials() {
+            const list = document.getElementById('materials-list');
+            const search = document.getElementById('material-search').value.toLowerCase();
+            const formatFilter = document.getElementById('material-filter-type').value;
+
+            const filtered = state.materials.filter(m => {
+                const matchesSearch = m.title.toLowerCase().includes(search) || m.tags.some(t => t.toLowerCase().includes(search));
+                const matchesFmt = formatFilter === 'ALL' || m.category === formatFilter;
+                return matchesSearch && matchesFmt;
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No training materials or decks match.</div>`;
+                return;
+            }
+
+            list.innerHTML = filtered.map(m => {
+                const isDeck = m.category === 'Google Slides' || m.category === 'PowerPoint';
+                
+                return `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider ${m.category === 'Google Slides' ? 'text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200' : m.category === 'PowerPoint' ? 'text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200' : 'text-slate-400'}">
+                                ${m.category}
+                            </span>
+                            <div class="admin-only flex items-center gap-1">
+                                <button onclick="editMaterial('${m.id}')" class="p-1 text-slate-400 hover:text-indigo-600"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+                                <button onclick="deleteMaterial('${m.id}')" class="p-1 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-sm mb-2">${escapeHtml(m.title)}</h4>
+                        ${m.fileName ? `<p class="text-xs text-slate-500 mb-3 flex items-center gap-1"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> ${escapeHtml(m.fileName)}</p>` : ''}
+                        
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            ${m.tags.map(t => `<span class="bg-slate-100 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-md">#${escapeHtml(t)}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 flex gap-2">
+                        ${isDeck ? `
+                            <button onclick="openSlideViewer('${m.id}')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs">
+                                <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Present Deck
+                            </button>
+                        ` : `
+                            <a href="${m.url}" target="_blank" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5">
+                                Open Document <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            </a>
+                        `}
+                    </div>
+                </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+            updateRoleUI();
+        }
+
+
+        // ==================== MODAL ACTIONS ====================
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            if (id === 'waveModal') document.getElementById('waveForm').reset();
+            if (id === 'materialModal') {
+                document.getElementById('materialForm').reset();
+                selectedUploadedFile = null;
+                document.getElementById('upload-label').textContent = 'Click or Drag & Drop PowerPoint Deck Here';
+            }
+            if (id === 'planModal') document.getElementById('planForm').reset();
+        }
+
+        function saveWave(e) {
+            e.preventDefault();
+            if (state.role !== 'admin') return;
+            const id = document.getElementById('wave-id').value || 'w_' + Date.now();
+            const existing = state.waves.find(w => w.id === id);
+            const waveData = {
+                id,
+                name: document.getElementById('wave-name').value,
+                trainer: document.getElementById('wave-trainer').value,
+                start: document.getElementById('wave-start').value,
+                end: document.getElementById('wave-end').value,
+                status: document.getElementById('wave-status').value,
+                count: Number(document.getElementById('wave-count').value),
+                completedCount: existing ? existing.completedCount : 0,
+                passRate: Number(document.getElementById('wave-passrate').value),
+                milestonesList: existing ? existing.milestonesList : [
+                    { id: 'm1_' + Date.now(), name: '1. Week 1 - Onboarding', completed: false },
+                    { id: 'm2_' + Date.now(), name: '2. Week 2 - Core Workflows', completed: false },
+                    { id: 'm3_' + Date.now(), name: '3. Week 3 - System Simulation', completed: false },
+                    { id: 'm4_' + Date.now(), name: '4. Week 4 - Graduation', completed: false }
+                ]
+            };
+
+            const idx = state.waves.findIndex(w => w.id === id);
+            if (idx > -1) state.waves[idx] = waveData;
+            else state.waves.push(waveData);
+
+            saveState();
+            renderAll();
+            closeModal('waveModal');
+            showToast("Wave saved successfully!");
+        }
+
+        function editWave(id) {
+            if (state.role !== 'admin') return;
+            const w = state.waves.find(x => x.id === id);
+            if (!w) return;
+            document.getElementById('wave-id').value = w.id;
+            document.getElementById('wave-name').value = w.name;
+            document.getElementById('wave-trainer').value = w.trainer;
+            document.getElementById('wave-start').value = w.start;
+            document.getElementById('wave-end').value = w.end;
+            document.getElementById('wave-status').value = w.status;
+            document.getElementById('wave-count').value = w.count;
+            document.getElementById('wave-passrate').value = w.passRate || 90;
+            openModal('waveModal');
+        }
+
+        function deleteWave(id) {
+            if (state.role !== 'admin') return;
+            if (confirm("Delete this wave cohort?")) {
+                state.waves = state.waves.filter(w => w.id !== id);
+                saveState();
+                renderAll();
+                showToast("Wave removed");
+            }
+        }
+
+        function saveMaterial(e) {
+            e.preventDefault();
+            if (state.role !== 'admin') return;
+            const id = document.getElementById('material-id').value || 'm_' + Date.now();
+            const format = document.getElementById('mat-format').value;
+            const tagsRaw = document.getElementById('mat-tags').value;
+            
+            let fileUrl = document.getElementById('mat-url').value;
+            let fileName = '';
+
+            if (format === 'PowerPoint' && selectedUploadedFile) {
+                fileUrl = URL.createObjectURL(selectedUploadedFile);
+                fileName = selectedUploadedFile.name;
+            }
+
+            const matData = {
+                id,
+                title: document.getElementById('mat-title').value,
+                category: format,
+                url: fileUrl,
+                fileName: fileName,
+                tags: tagsRaw.split(',').map(t => t.trim()).filter(Boolean)
+            };
+
+            const idx = state.materials.findIndex(m => m.id === id);
+            if (idx > -1) state.materials[idx] = matData;
+            else state.materials.push(matData);
+
+            saveState();
+            renderAll();
+            closeModal('materialModal');
+            showToast("Material deck saved successfully!");
+        }
+
+        function editMaterial(id) {
+            if (state.role !== 'admin') return;
+            const m = state.materials.find(x => x.id === id);
+            if (!m) return;
+            document.getElementById('material-id').value = m.id;
+            document.getElementById('mat-format').value = m.category;
+            toggleMaterialFormatFields();
+            document.getElementById('mat-title').value = m.title;
+            document.getElementById('mat-url').value = m.url;
+            document.getElementById('mat-tags').value = m.tags.join(', ');
+            openModal('materialModal');
+        }
+
+        function deleteMaterial(id) {
+            if (state.role !== 'admin') return;
+            if (confirm("Delete this material?")) {
+                state.materials = state.materials.filter(m => m.id !== id);
+                saveState();
+                renderAll();
+                showToast("Material removed");
+            }
+        }
+
+        function savePlan(e) {
+            e.preventDefault();
+            if (state.role !== 'admin') return;
+            const id = document.getElementById('plan-id').value || 'p_' + Date.now();
+            const existing = state.plans.find(p => p.id === id);
+
+            const topicsLines = document.getElementById('plan-topics').value.split('\n').map(t => t.trim()).filter(Boolean);
+            const topicsList = topicsLines.map((title, i) => {
+                const prev = existing && existing.topics ? existing.topics.find(t => t.title === title) : null;
+                return {
+                    id: 'top_' + Date.now() + '_' + i,
+                    title,
+                    completed: prev ? prev.completed : false
+                };
+            });
+
+            const planData = {
+                id,
+                title: document.getElementById('plan-title').value,
+                duration: document.getElementById('plan-duration').value,
+                mode: document.getElementById('plan-mode').value,
+                attachedMaterialId: document.getElementById('plan-attached-material').value,
+                objectives: document.getElementById('plan-objectives').value,
+                topics: topicsList
+            };
+
+            const idx = state.plans.findIndex(p => p.id === id);
+            if (idx > -1) state.plans[idx] = planData;
+            else state.plans.push(planData);
+
+            saveState();
+            renderAll();
+            closeModal('planModal');
+            showToast("Lesson plan saved!");
+        }
+
+        function editPlan(id) {
+            if (state.role !== 'admin') return;
+            const p = state.plans.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('plan-id').value = p.id;
+            document.getElementById('plan-title').value = p.title;
+            document.getElementById('plan-duration').value = p.duration;
+            document.getElementById('plan-mode').value = p.mode;
+            document.getElementById('plan-attached-material').value = p.attachedMaterialId || '';
+            document.getElementById('plan-objectives').value = p.objectives;
+            document.getElementById('plan-topics').value = p.topics ? p.topics.map(t => t.title).join('\n') : '';
+            openModal('planModal');
+        }
+
+        function deletePlan(id) {
+            if (state.role !== 'admin') return;
+            if (confirm("Delete this lesson plan?")) {
+                state.plans = state.plans.filter(p => p.id !== id);
+                expandedPlans.delete(id);
+                saveState();
+                renderAll();
+                showToast("Lesson plan removed");
+            }
+        }
+
+        // --- Data Export / Import ---
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `Atlas_Learning_Hub_Backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            showToast("Data backup exported!");
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    if (imported.waves && imported.materials && imported.plans) {
+                        state = imported;
+                        saveState();
+                        renderAll();
+                        showToast("Data restored successfully!");
+                    } else {
+                        showToast("Invalid JSON structure", true);
+                    }
+                } catch (err) {
+                    showToast("Error parsing JSON file", true);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function escapeHtml(str) {
+            return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
+        }
+    </script>
+</body>
+</html>
